@@ -6,6 +6,8 @@
 */
 
 
+const iceTimeout = 5 * 1000;
+
 async function waitForAudioOffer() {
     console.log('Waiting for audio offer...');
     try {
@@ -74,9 +76,9 @@ var sdpConstraintsAudio = {
 
 
 var pcAudio = new RTCPeerConnection(cfg, con),
-    pcVideo = new RTCPeerConnection(cfg, con);
-
-var pc2icedone = false
+    pcVideo = new RTCPeerConnection(cfg, con),
+    pcAudioIceDone = false,
+    pcVideoIceDone = false;
 
 pcVideo.onsignalingstatechange = onsignalingstatechange
 pcVideo.oniceconnectionstatechange = oniceconnectionstatechange
@@ -145,6 +147,7 @@ async function handleOfferFromAudio(offerDesc) {
         const answerDesc = await pcAudio.createAnswer(sdpConstraintsAudio);
         console.log('Created local answer: ', answerDesc)
         pcAudio.setLocalDescription(answerDesc)
+        setTimeout(pcAudioSendAnswer, iceTimeout);
     } catch (error) {
         console.warn("Couldn't create answer")
     }
@@ -153,9 +156,10 @@ async function handleOfferFromAudio(offerDesc) {
 async function handleOfferFromVideo(offerDesc) {
     pcVideo.setRemoteDescription(offerDesc)
     try {
-        const answerDesc = await pcVideo.createAnswer(sdpConstraintsAudio);
+        const answerDesc = await pcVideo.createAnswer(sdpConstraintsVideo);
         console.log('Created local answer: ', answerDesc)
-        pcVideo.setLocalDescription(answerDesc)
+        pcVideo.setLocalDescription(answerDesc);
+        setTimeout(pcVideoSendAnswer, iceTimeout);
     } catch (error) {
         console.warn("Couldn't create answer")
     }
@@ -164,6 +168,13 @@ async function handleOfferFromVideo(offerDesc) {
 pcAudio.onicecandidate = async e => {
     console.log(`ICE candidate (pcAudio) ${e.candidate && e.candidate.candidate}`)
     if (e.candidate == null) {
+        pcAudioSendAnswer();
+    }
+}
+
+async function pcAudioSendAnswer(){
+    if(!pcAudioIceDone){
+        pcAudioIceDone = true;
         let body = JSON.stringify({
             type: 1,
             sdp: pcAudio.localDescription.sdp
@@ -182,6 +193,13 @@ pcAudio.onicecandidate = async e => {
 pcVideo.onicecandidate = async e => {
     console.log(`ICE candidate (pcVideo) ${e.candidate && e.candidate.candidate}`)
     if (e.candidate == null) {
+        pcVideoSendAnswer();
+    }
+}
+
+async function pcVideoSendAnswer(){
+    if(!pcVideoIceDone){
+        pcVideoIceDone = true;
         let body = JSON.stringify({
             type: 1,
             sdp: pcVideo.localDescription.sdp

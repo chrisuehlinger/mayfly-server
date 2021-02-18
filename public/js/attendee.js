@@ -5,6 +5,8 @@
     https://webrtc-demos.appspot.com/html/pc1.html
 */
 
+const iceTimeout = 5 * 1000;
+
 async function waitForAnswer() {
   console.log('Waiting for answer...');
   try {
@@ -38,9 +40,9 @@ var cfg = {'iceServers': [
 
 /* THIS IS ALICE, THE CALLER/SENDER */
 
-var pc1 = new RTCPeerConnection(cfg, con);
-
-var pc1icedone = false
+var pc1 = new RTCPeerConnection(cfg, con),
+  dc1 = null,
+  pc1IceDone = false;
 
 var sdpConstraints = {
   optional: [],
@@ -70,6 +72,7 @@ async function createLocalOffer () {
       const desc = await pc1.createOffer(sdpConstraints)
       pc1.setLocalDescription(desc)
       console.log('created local offer', desc)
+      setTimeout(pc1SendOffer, iceTimeout);
     } catch(error){
       console.warn("Couldn't create offer", error)
     }
@@ -81,6 +84,13 @@ async function createLocalOffer () {
 pc1.onicecandidate = async e => {
   console.log(`ICE candidate (pc1) ${e.candidate && e.candidate.candidate}`)
   if (e.candidate == null) {
+    pc1SendOffer();
+  }
+}
+
+async function pc1SendOffer(){
+  if(!pc1IceDone) {
+    pc1IceDone = true;
     let body = JSON.stringify({
       type:'offer',
       sdp: pc1.localDescription.sdp

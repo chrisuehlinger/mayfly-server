@@ -6,6 +6,7 @@
 */
 
 let startTime = Date.now();
+const iceTimeout = 5 * 1000;
 
 async function waitForOffer() {
   console.log('Waiting for offer...');
@@ -62,7 +63,9 @@ var cfg = {
 
 /* THIS IS ALICE, THE CALLER/SENDER */
 
-var pc1 = new RTCPeerConnection(cfg, con);
+var pc1 = new RTCPeerConnection(cfg, con),
+  dc1 = null,
+  pc1IceDone = false;
 
 // Since the same JS file contains code for both sides of the connection,
 // activedc tracks which of the two possible datachannel variables we're using.
@@ -185,6 +188,7 @@ async function createLocalOffer() {
       const desc = await pc1.createOffer(sdpConstraints)
       pc1.setLocalDescription(desc)
       console.log('created local offer', desc)
+      setTimeout(pc1SendOffer, iceTimeout);
     } catch (error) {
       console.warn("Couldn't create offer", error)
     }
@@ -193,9 +197,16 @@ async function createLocalOffer() {
   }
 }
 
-pc1.onicecandidate = async e => {
+pc1.onicecandidate = e => {
   console.log(`ICE candidate (pc1) ${e.candidate && e.candidate.candidate}`)
   if (e.candidate == null) {
+    pc1SendOffer();
+  }
+}
+
+async function pc1SendOffer(){
+  if(!pc1IceDone) {
+    pc1IceDone = true;
     let body = JSON.stringify({
       type: 'offer',
       sdp: pc1.localDescription.sdp
@@ -208,7 +219,6 @@ pc1.onicecandidate = async e => {
       body
     });
     waitForAnswer();
-    $('#localOffer').html(JSON.stringify())
   }
 }
 
@@ -265,9 +275,8 @@ function handleCandidateFromPC2(iceCandidate) {
 /* THIS IS BOB, THE ANSWERER/RECEIVER */
 
 var pc2 = new RTCPeerConnection(cfg, con),
-  dc2 = null
-
-var pc2icedone = false
+  dc2 = null,
+  pc2IceDone = false;
 
 pc2.ondatachannel = function (e) {
   var fileReceiver2 = new FileReceiver()
@@ -303,15 +312,23 @@ async function handleOfferFromPC1(offerDesc) {
     const answerDesc = await pc2.createAnswer(sdpConstraints);
     writeToChatLog('Created local answer', 'text-success')
     console.log('Created local answer: ', answerDesc)
-    pc2.setLocalDescription(answerDesc)
+    pc2.setLocalDescription(answerDesc);
+    setTimeout(pc2SendAnswer, iceTimeout);
   } catch (error) {
     console.warn("Couldn't create answer")
   }
 }
 
-pc2.onicecandidate = async e => {
+pc2.onicecandidate = e => {
   console.log(`ICE candidate (pc2) ${e.candidate && e.candidate.candidate}`)
   if (e.candidate == null) {
+    pc2SendAnswer();
+  }
+}
+
+async function pc2SendAnswer(){
+  if(!pc2IceDone) {
+    pc2IceDone = true;
     let body = JSON.stringify({
       type: 1,
       sdp: pc2.localDescription.sdp
