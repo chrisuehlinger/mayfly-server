@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mayfly Performer page</title>
+    <style>
+        #remoteVideo {
+            display: block;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+<video id="remoteVideo" playsinline></video>
+<h2>Performer</h2>
+<canvas id="analyserPerformer" width="512" height="200"></canvas>
+<h2>Attendee</h2>
+<canvas id="analyserAttendee" width="512" height="200"></canvas>
+<audio id="localAudio" muted ></audio>
+<audio id="remoteAudio"></audio>
+
+<script src="js/performer.js"></script>
+</body>
+</html>
