@@ -52,7 +52,8 @@ var cfg = {
             credential: 'world',
             username: 'hello'
         },
-    ]
+    ],
+    iceTransportPolicy: 'relay'
 },
     con = { 'optional': [{ 'DtlsSrtpKeyAgreement': true }] }
 
