@@ -101,7 +101,9 @@ async function prepareForRemoteOffer() {
                 pcAudio.addTrack(track, stream);
             }
         });
-        waitForAudioOffer();
+        if(location.search !== '?videoonly'){
+            waitForAudioOffer();
+        }
         waitForVideoOffer();
         createAnalyser(stream, 'analyserPerformer');
     } catch (error) {
