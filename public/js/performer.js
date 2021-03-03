@@ -5,6 +5,29 @@
     https://webrtc-demos.appspot.com/html/pc1.html
 */
 
+const STATE_TO_BUTTON_DICT = {
+    LandOnSill: 'Idle',
+    IdleOnSill: 'Idle',
+    FlyHopToSit: 'Sit',
+    SitIdle: 'Sit',
+    FlySitToStand: 'Sit',
+    SurprisedEntry: 'Surprised',
+    SurprisedLoop: 'Surprised',
+    SurprisedExit: 'Surprised',
+    ConcernedEntry: 'Concerned',
+    ConcernedLoop: 'Concerned',
+    ConcernedExit: 'Concerned',
+    GestureArmsUpEntry: 'GestureArmsUp',
+    GestureArmsUpLoop: 'GestureArmsUp',
+    GestureArmsUpExit: 'GestureArmsUp',
+    GestureArmsForwardEntry: 'GestureArmsForward',
+    GestureArmsForwardLoop: 'GestureArmsForward',
+    GestureArmsForwardExit: 'GestureArmsForward',
+    BookEntry: 'Book',
+    BookLoop: 'Book',
+    BookExit: 'Book',
+}
+
 
 const iceTimeout = 5 * 1000;
 
@@ -190,6 +213,11 @@ pcAudio.ondatachannel = function (e) {
     switch(msg.type){
         case 'AnimationEvent':
             document.getElementById('current-event').innerText = msg.name;
+            $('.button-area button').removeClass('active-animation');
+            let currentState = STATE_TO_BUTTON_DICT[msg.name];
+            if(currentState){
+                $(`.button-area button#${currentState}`).addClass('active-animation');
+            }
             break;
         default:
             console.log(`No handler for type ${msg.type}`);
@@ -317,8 +345,3 @@ document.getElementById("Concerned").onclick = () => { dc && dc.send(JSON.string
 document.getElementById("GestureArmsUp").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'GestureArmsUp'}))};
 document.getElementById("GestureArmsForward").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'GestureArmsForward'}))};
 document.getElementById("Book").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Book'}))};
-
-// document.getElementById('KnockLoop').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'KnockLoop'}))}
-// document.getElementById('WatchWindowOpen').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'WatchWindowOpen'}))}
-// document.getElementById('LandOnSill').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'LandOnSill'}))}
-// document.getElementById('IdleOnSill').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'IdleOnSill'}))}
