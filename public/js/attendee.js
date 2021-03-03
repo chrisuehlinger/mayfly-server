@@ -30,11 +30,11 @@ async function waitForAnswer() {
 
 var cfg = {'iceServers': [
   // {'urls': 'stun:stun.l.google.com:19302'}
-      //   {
-      //     urls: ['turn:turn.mayfly.live'],
-      //     credential: 'world',
-      //     username: 'hello'
-      // },
+        {
+          urls: ['turn:turn.mayfly.live'],
+          credential: 'world',
+          username: 'hello'
+      },
 ]},
   con = { 'optional': [{'DtlsSrtpKeyAgreement': true}] }
 
