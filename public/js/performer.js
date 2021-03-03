@@ -181,15 +181,19 @@ pcAudio.ondatachannel = function (e) {
   var datachannel = e.channel || e; // Chrome sends event, FF sends raw channel
   console.log('Received datachannel (pc2)', arguments)
   dc = datachannel
-  dc.onopen = function (e) {
-    console.log('data channel connect')
-    // dc.send(JSON.stringify({
-    //     type:'hello',
-    //     foo:'bar'
-    // }))
-  }
-  dc.onmessage = function (e) {
-    console.log('Got message (pc2)', e.data)
+  dc.onopen = () => {
+    console.log('data channel connect');
+  };
+  dc.onmessage = (e) => {
+    console.log('Got message (pc2)', e.data);
+    let msg = JSON.parse(e.data);
+    switch(msg.type){
+        case 'AnimationEvent':
+            document.getElementById('current-event').innerText = msg.name;
+            break;
+        default:
+            console.log(`No handler for type ${msg.type}`);
+    }
   }
 }
 
@@ -306,8 +310,15 @@ async function createAnalyser(stream, canvasId) {
     }();
 }
 
+document.getElementById("Idle").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Idle'}))};
+document.getElementById("Sit").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Sit'}))};
+document.getElementById("Surprised").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Surprised'}))};
+document.getElementById("Concerned").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Concerned'}))};
+document.getElementById("GestureArmsUp").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'GestureArmsUp'}))};
+document.getElementById("GestureArmsForward").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'GestureArmsForward'}))};
+document.getElementById("Book").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Book'}))};
 
-document.getElementById('KnockLoop').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'KnockLoop'}))}
-document.getElementById('WatchWindowOpen').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'WatchWindowOpen'}))}
-document.getElementById('LandOnSill').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'LandOnSill'}))}
-document.getElementById('IdleOnSill').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'IdleOnSill'}))}
+// document.getElementById('KnockLoop').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'KnockLoop'}))}
+// document.getElementById('WatchWindowOpen').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'WatchWindowOpen'}))}
+// document.getElementById('LandOnSill').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'LandOnSill'}))}
+// document.getElementById('IdleOnSill').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'IdleOnSill'}))}

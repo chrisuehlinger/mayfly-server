@@ -173,4 +173,9 @@ setTimeout(() => {
       }
     }
   }
-}, 1000);
+}, 100);
+window.sendAnimationState = (name) => {
+  if(dc1){
+    dc1.send(JSON.stringify({ type: 'AnimationEvent', name }));
+  }
+}
