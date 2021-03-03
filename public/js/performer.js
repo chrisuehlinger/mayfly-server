@@ -48,14 +48,14 @@ async function waitForVideoOffer() {
 
 var cfg = {
     'iceServers': [
-        // {'urls': 'stun:stun.l.google.com:19302'}
-        {
-            urls: ['turn:turn.mayfly.live'],
-            credential: 'world',
-            username: 'hello'
-        },
+        // {'urls': 'stun:stun.l.google.com:19302'},
+        // {
+        //     urls: ['turn:turn.mayfly.live'],
+        //     credential: 'world',
+        //     username: 'hello'
+        // },
     ],
-    iceTransportPolicy: 'relay'
+    // iceTransportPolicy: 'relay'
 },
     con = { 'optional': [{ 'DtlsSrtpKeyAgreement': true }] }
 
@@ -78,7 +78,8 @@ var sdpConstraintsAudio = {
 var pcAudio = new RTCPeerConnection(cfg, con),
     pcVideo = new RTCPeerConnection(cfg, con),
     pcAudioIceDone = false,
-    pcVideoIceDone = false;
+    pcVideoIceDone = false,
+    dc = null;
 
 pcVideo.onsignalingstatechange = onsignalingstatechange
 pcVideo.oniceconnectionstatechange = oniceconnectionstatechange
@@ -104,10 +105,14 @@ async function prepareForRemoteOffer() {
                 pcAudio.addTrack(track, stream);
             }
         });
-        if(location.search !== '?videoonly'){
+        if(location.search === '?videoonly'){
+            waitForVideoOffer();
+        } else if (location.search === '?audioonly'){
             waitForAudioOffer();
+        } else {
+            waitForAudioOffer();
+            waitForVideoOffer();
         }
-        waitForVideoOffer();
         createAnalyser(stream, 'analyserPerformer');
     } catch (error) {
         console.log('Error adding stream to pc2: ' + error)
@@ -170,6 +175,22 @@ pcAudio.onicecandidate = async e => {
     if (e.candidate == null) {
         pcAudioSendAnswer();
     }
+}
+
+pcAudio.ondatachannel = function (e) {
+  var datachannel = e.channel || e; // Chrome sends event, FF sends raw channel
+  console.log('Received datachannel (pc2)', arguments)
+  dc = datachannel
+  dc.onopen = function (e) {
+    console.log('data channel connect')
+    // dc.send(JSON.stringify({
+    //     type:'hello',
+    //     foo:'bar'
+    // }))
+  }
+  dc.onmessage = function (e) {
+    console.log('Got message (pc2)', e.data)
+  }
 }
 
 async function pcAudioSendAnswer(){
@@ -285,3 +306,8 @@ async function createAnalyser(stream, canvasId) {
     }();
 }
 
+
+document.getElementById('KnockLoop').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'KnockLoop'}))}
+document.getElementById('WatchWindowOpen').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'WatchWindowOpen'}))}
+document.getElementById('LandOnSill').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'LandOnSill'}))}
+document.getElementById('IdleOnSill').onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'IdleOnSill'}))}

@@ -30,19 +30,20 @@ async function waitForAnswer() {
 
 var cfg = {'iceServers': [
   // {'urls': 'stun:stun.l.google.com:19302'}
-        {
-          urls: ['turn:turn.mayfly.live'],
-          credential: 'world',
-          username: 'hello'
-      },
+      //   {
+      //     urls: ['turn:turn.mayfly.live'],
+      //     credential: 'world',
+      //     username: 'hello'
+      // },
 ]},
   con = { 'optional': [{'DtlsSrtpKeyAgreement': true}] }
 
 /* THIS IS ALICE, THE CALLER/SENDER */
 
 var pc1 = new RTCPeerConnection(cfg, con),
+  pc1IceDone = false,
   dc1 = null,
-  pc1IceDone = false;
+  activedc = null;
 
 var sdpConstraints = {
   optional: [],
@@ -68,6 +69,7 @@ async function createLocalOffer () {
     });
     console.log(stream)
     console.log('adding stream to pc1')
+    setupDC1()
     try {
       const desc = await pc1.createOffer(sdpConstraints)
       pc1.setLocalDescription(desc)
@@ -79,6 +81,21 @@ async function createLocalOffer () {
   } catch (error) {
     console.log('Error adding stream to pc1: ' + error)
   }
+}
+
+function setupDC1() {
+  try {
+    dc1 = pc1.createDataChannel('test', { reliable: true })
+    activedc = dc1
+    console.log('Created datachannel (pc1)')
+    dc1.onopen = function (e) {
+      console.log('data channel connect')
+    }
+    dc1.onmessage = function (e) {
+      console.log('Got message (pc1)', e.data);
+      window.Unity.call(e.data);
+    }
+  } catch (e) { console.warn('No data channel (pc1)', e); }
 }
 
 pc1.onicecandidate = async e => {
@@ -139,3 +156,21 @@ function handleAnswerFromPC2 (answerDesc) {
 function handleCandidateFromPC2 (iceCandidate) {
   pc1.addIceCandidate(iceCandidate)
 }
+
+setTimeout(() => {
+  if (window && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.unityControl) {
+    console.log('OHYEAH');
+    window.Unity = {
+      call: function(msg) {
+        window.webkit.messageHandlers.unityControl.postMessage(msg);
+      }
+    }
+  } else {
+    window.Unity = {
+      call: function(msg) {
+        console.log('NO UNITY PARENT TO RECEIVE', msg);
+        // window.location = 'unity:' + msg;
+      }
+    }
+  }
+}, 1000);
