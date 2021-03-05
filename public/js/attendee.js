@@ -5,6 +5,13 @@
     https://webrtc-demos.appspot.com/html/pc1.html
 */
 
+
+window.sendAnimationState = (objectName, stateName) => {
+  if(dc1 && dc1.readyState === 'open'){
+    dc1.send(JSON.stringify({ type: 'AnimationEvent', objectName, stateName }));
+  }
+};
+
 const iceTimeout = 5 * 1000;
 
 async function waitForAnswer() {
@@ -174,8 +181,3 @@ setTimeout(() => {
     }
   }
 }, 100);
-window.sendAnimationState = (objectName, stateName) => {
-  if(dc1 && dc1.readyState === 'open'){
-    dc1.send(JSON.stringify({ type: 'AnimationEvent', objectName, stateName }));
-  }
-}
