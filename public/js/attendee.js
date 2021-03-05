@@ -63,7 +63,7 @@ async function createLocalOffer () {
     var video = document.getElementById('localVideo')
     video.srcObject = stream
     video.play()
-    
+
     stream.getTracks().forEach(function(track) {
       pc1.addTrack(track, stream);
     });
@@ -174,8 +174,8 @@ setTimeout(() => {
     }
   }
 }, 100);
-window.sendAnimationState = (name) => {
-  if(dc1){
-    dc1.send(JSON.stringify({ type: 'AnimationEvent', name }));
+window.sendAnimationState = (objectName, stateName) => {
+  if(dc1 && dc1.readyState === 'open'){
+    dc1.send(JSON.stringify({ type: 'AnimationEvent', objectName, stateName }));
   }
 }

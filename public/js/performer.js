@@ -5,27 +5,41 @@
     https://webrtc-demos.appspot.com/html/pc1.html
 */
 
-const STATE_TO_BUTTON_DICT = {
-    LandOnSill: 'Idle',
-    IdleOnSill: 'Idle',
-    FlyHopToSit: 'Sit',
-    SitIdle: 'Sit',
-    FlySitToStand: 'Sit',
-    SurprisedEntry: 'Surprised',
-    SurprisedLoop: 'Surprised',
-    SurprisedExit: 'Surprised',
-    ConcernedEntry: 'Concerned',
-    ConcernedLoop: 'Concerned',
-    ConcernedExit: 'Concerned',
-    GestureArmsUpEntry: 'GestureArmsUp',
-    GestureArmsUpLoop: 'GestureArmsUp',
-    GestureArmsUpExit: 'GestureArmsUp',
-    GestureArmsForwardEntry: 'GestureArmsForward',
-    GestureArmsForwardLoop: 'GestureArmsForward',
-    GestureArmsForwardExit: 'GestureArmsForward',
-    BookEntry: 'Book',
-    BookLoop: 'Book',
-    BookExit: 'Book',
+const MAYFLY_STATE_TO_BUTTON_DICT = {
+  LandOnSill: 'Idle',
+  IdleOnSill: 'Idle',
+  FlyHopToSit: 'Sit',
+  SitIdle: 'Sit',
+  FlySitToStand: 'Sit',
+  SurprisedEntry: 'Surprised',
+  SurprisedLoop: 'Surprised',
+  SurprisedExit: 'Surprised',
+  ConcernedEntry: 'Concerned',
+  ConcernedLoop: 'Concerned',
+  ConcernedExit: 'Concerned',
+  GestureArmsUpEntry: 'GestureArmsUp',
+  GestureArmsUpLoop: 'GestureArmsUp',
+  GestureArmsUpExit: 'GestureArmsUp',
+  GestureArmsForwardEntry: 'GestureArmsForward',
+  GestureArmsForwardLoop: 'GestureArmsForward',
+  GestureArmsForwardExit: 'GestureArmsForward',
+  BookEntry: 'Book',
+  BookLoop: 'Book',
+  BookExit: 'Book',
+}
+
+const BEAVERDAM_STATE_TO_BUTTON_DICT = {
+  BeaverDamOutOfScene: 'BeaverDamOff',
+  BeaverDamSceneEntry: 'BeaverDamOn',
+  BeaverDamLoop: 'BeaverDamOn',
+  BeaverDamExit: 'BeaverDamOn',
+}
+
+const BUILDINGS_STATE_TO_BUTTON_DICT = {
+  BuildingOutOfScene: 'BuildingsOff',
+  BuildingEnter: 'BuildingsOn',
+  BuildingLoop: 'BuildingsOn',
+  BuildingExit: 'BuildingsOn',
 }
 
 
@@ -212,11 +226,11 @@ pcAudio.ondatachannel = function (e) {
     let msg = JSON.parse(e.data);
     switch(msg.type){
         case 'AnimationEvent':
-            document.getElementById('current-event').innerText = msg.name;
-            $('.button-area button').removeClass('active-animation');
-            let currentState = STATE_TO_BUTTON_DICT[msg.name];
+            document.getElementById(`${msg.objectName}-current-event`).innerText = msg.stateName;
+            $(`#${msg.objectName}AnimationArea button`).removeClass('active-animation');
+            let currentState = MAYFLY_STATE_TO_BUTTON_DICT[msg.stateName] || BEAVERDAM_STATE_TO_BUTTON_DICT[msg.stateName] || BUILDINGS_STATE_TO_BUTTON_DICT[msg.stateName];
             if(currentState){
-                $(`.button-area button#${currentState}`).addClass('active-animation');
+                $(`#${msg.objectName}AnimationArea button#${currentState}`).addClass('active-animation');
             }
             break;
         default:
@@ -272,7 +286,7 @@ function handleCandidateFromPC1(iceCandidate) {
 }
 
 
-// shim for AudioContext when it's not avb. 
+// shim for AudioContext when it's not avb.
 let AudioContext = window.AudioContext || window.webkitAudioContext;
 
 async function createAnalyser(stream, canvasId) {
@@ -338,10 +352,16 @@ async function createAnalyser(stream, canvasId) {
     }();
 }
 
-document.getElementById("Idle").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Idle'}))};
-document.getElementById("Sit").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Sit'}))};
-document.getElementById("Surprised").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Surprised'}))};
-document.getElementById("Concerned").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Concerned'}))};
-document.getElementById("GestureArmsUp").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'GestureArmsUp'}))};
-document.getElementById("GestureArmsForward").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'GestureArmsForward'}))};
-document.getElementById("Book").onclick = () => { dc && dc.send(JSON.stringify({ type: 'QueueAnimation', content: 'Book'}))};
+document.getElementById("Idle").onclick = () => { dc && dc.send(JSON.stringify({ type: 'MayflyAnimation', content: 'Idle'}))};
+document.getElementById("Sit").onclick = () => { dc && dc.send(JSON.stringify({ type: 'MayflyAnimation', content: 'Sit'}))};
+document.getElementById("Surprised").onclick = () => { dc && dc.send(JSON.stringify({ type: 'MayflyAnimation', content: 'Surprised'}))};
+document.getElementById("Concerned").onclick = () => { dc && dc.send(JSON.stringify({ type: 'MayflyAnimation', content: 'Concerned'}))};
+document.getElementById("GestureArmsUp").onclick = () => { dc && dc.send(JSON.stringify({ type: 'MayflyAnimation', content: 'GestureArmsUp'}))};
+document.getElementById("GestureArmsForward").onclick = () => { dc && dc.send(JSON.stringify({ type: 'MayflyAnimation', content: 'GestureArmsForward'}))};
+document.getElementById("Book").onclick = () => { dc && dc.send(JSON.stringify({ type: 'MayflyAnimation', content: 'Book'}))};
+
+document.getElementById("BeaverDamOff").onclick = () => { dc && dc.send(JSON.stringify({ type: 'BeaverDamAnimation', content: 'BeaverDamOff'}))};
+document.getElementById("BeaverDamOn").onclick = () => { dc && dc.send(JSON.stringify({ type: 'BeaverDamAnimation', content: 'BeaverDamOn'}))};
+
+document.getElementById("BuildingsOff").onclick = () => { dc && dc.send(JSON.stringify({ type: 'BuildingsAnimation', content: 'BuildingsOff'}))};
+document.getElementById("BuildingsOn").onclick = () => { dc && dc.send(JSON.stringify({ type: 'BuildingsAnimation', content: 'BuildingsOn'}))};
