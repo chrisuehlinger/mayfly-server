@@ -85,7 +85,9 @@ async function waitForVideoOffer() {
 
 var cfg = {
     'iceServers': [
-        // {'urls': 'stun:stun.l.google.com:19302'},
+        {
+          urls: ['stun:stun.l.google.com:19302']
+        },
         {
             urls: ['turn:turn.mayfly.live'],
             credential: 'world',
