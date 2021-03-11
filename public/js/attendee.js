@@ -44,6 +44,7 @@ var cfg = {
         username: "hello",
       },
     ],
+    iceTransportPolicy: 'relay',
   },
   con = { optional: [{ DtlsSrtpKeyAgreement: true }] };
 
@@ -165,10 +166,6 @@ pc1.onicegatheringstatechange = onicegatheringstatechange;
 function handleAnswerFromPC2(answerDesc) {
   console.log("Received remote answer: ", answerDesc);
   pc1.setRemoteDescription(answerDesc);
-}
-
-function handleCandidateFromPC2(iceCandidate) {
-  pc1.addIceCandidate(iceCandidate);
 }
 
 setTimeout(() => {
